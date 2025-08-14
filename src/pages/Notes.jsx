@@ -13,7 +13,7 @@ export default function Notes() {
 
   const fetchNotes = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/notes", {
+      const res = await axios.get("https://notes-app-backend-1-fou7.onrender.com/notes", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes(res.data);
@@ -29,21 +29,21 @@ export default function Notes() {
   }, []);
 
   const handleAdd = async (note) => {
-    const res = await axios.post("http://localhost:3000/notes", note, {
+    const res = await axios.post("https://notes-app-backend-1-fou7.onrender.com/notes", note, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setNotes([...notes, res.data]);
   };
 
   const handleUpdate = async (id, updated) => {
-    const res = await axios.put(`http://localhost:3000/notes/${id}`, updated, {
+    const res = await axios.put(`https://notes-app-backend-1-fou7.onrender.com/notes/${id}`, updated, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setNotes(notes.map(n => n.id === id ? res.data : n));
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:3000/notes/${id}`, {
+    await axios.delete(`https://notes-app-backend-1-fou7.onrender.com/notes/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setNotes(notes.filter(n => n.id !== id));

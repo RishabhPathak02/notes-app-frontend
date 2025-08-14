@@ -11,7 +11,7 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3000/auth/register", {
+      await axios.post("https://notes-app-backend-1-fou7.onrender.com/auth/register", {
         username,
         password,
       });
