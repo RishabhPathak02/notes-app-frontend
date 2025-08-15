@@ -3,22 +3,32 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import styles from "./Login.module.css";
 import NavBar from "../components/NavBar";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (loading) return; // Prevent multiple clicks
+    setLoading(true);
+
     try {
-      const res = await axios.post("https://notes-app-backend-1-fou7.onrender.com/auth/login", {
-        username,
-        password,
-      });
+      const res = await axios.post(
+        "https://notes-app-backend-1-fou7.onrender.com/auth/login",
+        { username, password }
+      );
+
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", username); // Store username for later use
       navigate("/");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,13 +53,18 @@ export default function Login() {
             placeholder="Password"
             required
           />
-          <button type="submit" className={styles.loginButton}>Login</button>
+          <button
+            type="submit"
+            className={styles.loginButton}
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
         <p className={styles.registerText}>
           New user? <Link to="/register">Register</Link>
         </p>
       </div>
     </>
-
   );
 }
