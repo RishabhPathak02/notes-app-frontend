@@ -21,9 +21,11 @@ export default function Login() {
         "https://notes-app-backend-1-fou7.onrender.com/auth/login",
         { username, password }
       );
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("username", username); // Store username for later use
+      await new Promise((resolve) => {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("username", username);
+        resolve();
+      });
       navigate("/");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
