@@ -81,7 +81,7 @@ export default function Notes() {
   const handleUpdate = async (id, updated) => {
     try {
       const res = await apiClient.put(`/notes/${id}`, updated);
-      setNotes((prev) => prev.map((n) => (n._id === id ? res.data : n)));
+      setNotes((prev) => prev.map((n) => (n.id === id ? res.data : n)));
     } catch (err) {
       console.error("Error updating note:", err);
       setError("Failed to update the note.");
@@ -91,7 +91,7 @@ export default function Notes() {
   const handleDelete = async (id) => {
     try {
       await apiClient.delete(`/notes/${id}`);
-      setNotes((prev) => prev.filter((n) => n._id !== id));
+      setNotes((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.error("Error deleting note:", err);
       setError("Failed to delete the note.");
@@ -111,7 +111,7 @@ export default function Notes() {
     return (
       <div className={styles.notesList}>
         {notes.map((note) => (
-          <div key={note._id || note.id} className={styles.noteCard}>
+          <div key={note.id} className={styles.noteCard}>
             <NoteItem note={note} onUpdate={handleUpdate} onDelete={handleDelete} />
           </div>
         ))}

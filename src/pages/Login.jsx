@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import styles from "./Login.module.css";
 import NavBar from "../components/NavBar";
 
-export default function Login() {
+// Accept 'onLoginSuccess' as a prop
+export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,7 +14,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (loading) return; // Prevent multiple clicks
+    if (loading) return;
     setLoading(true);
 
     try {
@@ -21,12 +22,16 @@ export default function Login() {
         "https://notes-app-backend-1-fou7.onrender.com/auth/login",
         { username, password }
       );
-      await new Promise((resolve) => {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("username", username);
-        resolve();
-      });
+      
+      // 1. Call the parent's function to update the token state in App.jsx
+      onLoginSuccess(res.data.token);
+      
+      // 2. Set the username (this is fine to keep here)
+      localStorage.setItem("username", username);
+      
+      // 3. Navigate to the home page
       navigate("/");
+
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
     } finally {
