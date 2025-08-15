@@ -9,52 +9,56 @@ import styles from "./Notes.module.css";
 export default function Notes() {
   const [notes, setNotes] = useState([]);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
-  const fetchNotes = async () => {
+  // Fetch notes from backend
+  const fetchNotes = async (storedToken) => {
     try {
       const res = await axios.get(
         "https://notes-app-backend-1-fou7.onrender.com/notes",
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${storedToken}` } }
       );
       setNotes(res.data);
-      console.log("Response from backend:", res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching notes:", err);
       navigate("/login");
     }
   };
 
+  // Run only once on component mount
   useEffect(() => {
-    if (token) {
-      fetchNotes();
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      fetchNotes(storedToken);
     } else {
       navigate("/login");
     }
-  }, [token]); 
+  }, [navigate]);
 
   const handleAdd = async (note) => {
+    const storedToken = localStorage.getItem("token");
     const res = await axios.post(
       "https://notes-app-backend-1-fou7.onrender.com/notes",
       note,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${storedToken}` } }
     );
-    setNotes((prev) => [...prev, res.data]); 
+    setNotes((prev) => [...prev, res.data]);
   };
 
   const handleUpdate = async (id, updated) => {
+    const storedToken = localStorage.getItem("token");
     const res = await axios.put(
       `https://notes-app-backend-1-fou7.onrender.com/notes/${id}`,
       updated,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${storedToken}` } }
     );
     setNotes((prev) => prev.map((n) => (n.id === id ? res.data : n)));
   };
 
   const handleDelete = async (id) => {
+    const storedToken = localStorage.getItem("token");
     await axios.delete(
       `https://notes-app-backend-1-fou7.onrender.com/notes/${id}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${storedToken}` } }
     );
     setNotes((prev) => prev.filter((n) => n.id !== id));
   };
