@@ -6,12 +6,11 @@ import NavBar from "../components/NavBar";
 import { useNavigate } from "react-router-dom";
 import styles from "./Notes.module.css";
 
-// Create a reusable Axios instance for API calls
+
 const apiClient = axios.create({
-  baseURL: "https://notes-app-backend-1-fou7.onrender.com",
+  baseURL: "http://localhost:3000",
 });
 
-// Automatically add token to every request
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -29,6 +28,7 @@ export default function Notes() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // ✅ Fetch notes
   const fetchNotes = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -37,7 +37,8 @@ export default function Notes() {
       setNotes(res.data);
     } catch (err) {
       console.error("Error fetching notes:", err);
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem("token");
         navigate("/login");
       } else {
         setError("Failed to fetch notes. Please try again later.");
@@ -49,71 +50,76 @@ export default function Notes() {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-
     if (storedToken) {
-      // Token already in localStorage → fetch immediately
       fetchNotes();
     } else {
-      // Wait a tick in case we just came from login and token hasn't been set yet
-      const timer = setTimeout(() => {
-        const retryToken = localStorage.getItem("token");
-        if (retryToken) {
-          fetchNotes();
-        } else {
-          navigate("/login");
-        }
-      }, 50);
-
-      return () => clearTimeout(timer);
+      navigate("/login");
     }
   }, [fetchNotes, navigate]);
 
+  // ✅ Add note
   const handleAdd = async (note) => {
     try {
       const res = await apiClient.post("/notes", note);
-      setNotes((prev) => [...prev, res.data]);
+      setNotes((prev) => [res.data, ...prev]);
+      setError(null);
     } catch (err) {
       console.error("Error adding note:", err);
       setError("Failed to add the note.");
     }
   };
 
-  const handleUpdate = async (id, updated) => {
+  // ✅ Update note (title/content or status)
+  const handleUpdate = async (id, updatedFields) => {
     try {
-      const res = await apiClient.put(`/notes/${id}`, updated);
+      const existing = notes.find((n) => n.id === id);
+      if (!existing) return;
+
+      const payload = { ...existing, ...updatedFields }; // merge fields
+      const res = await apiClient.put(`/notes/${id}`, payload);
+
       setNotes((prev) => prev.map((n) => (n.id === id ? res.data : n)));
+      setError(null);
     } catch (err) {
       console.error("Error updating note:", err);
       setError("Failed to update the note.");
     }
   };
 
+  // ✅ Delete note
   const handleDelete = async (id) => {
     try {
       await apiClient.delete(`/notes/${id}`);
       setNotes((prev) => prev.filter((n) => n.id !== id));
+      setError(null);
     } catch (err) {
       console.error("Error deleting note:", err);
       setError("Failed to delete the note.");
     }
   };
 
+  // ✅ Toggle complete
+  const handleComplete = async (id, status) => {
+    await handleUpdate(id, { status });
+  };
+
+  // ✅ Render content
   const renderContent = () => {
-    if (isLoading) {
-      return <p className={styles.message}>Loading notes...</p>;
-    }
-    if (error) {
-      return <p className={styles.error}>{error}</p>;
-    }
-    if (notes.length === 0) {
+    if (isLoading) return <p className={styles.message}>Loading notes...</p>;
+    if (error) return <p className={styles.error}>{error}</p>;
+    if (notes.length === 0)
       return <p className={styles.message}>No notes yet. Add one above!</p>;
-    }
+
     return (
       <div className={styles.notesList}>
         {notes.map((note) => (
-          <div key={note.id} className={styles.noteCard}>
-            <NoteItem note={note} onUpdate={handleUpdate} onDelete={handleDelete} />
-          </div>
+          <NoteItem
+            key={note.id}
+            note={note}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+            onComplete={handleComplete}
+          />
         ))}
       </div>
     );

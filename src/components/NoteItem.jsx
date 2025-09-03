@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import styles from "./NoteItem.module.css";
-import { FaPencilAlt } from 'react-icons/fa'; // Font Awesome pencil
-import { FaTrash } from "react-icons/fa";
+import { FaPencilAlt, FaTrash, FaCheck, FaTimes } from "react-icons/fa";
 
-
-export default function NoteItem({ note, onUpdate, onDelete }) {
+export default function NoteItem({ note, onUpdate, onDelete, onComplete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
@@ -15,12 +13,18 @@ export default function NoteItem({ note, onUpdate, onDelete }) {
   }, [note]);
 
   const handleSave = () => {
-    onUpdate(note.id, { title, content });
+    if (title !== note.title || content !== note.content) {
+      onUpdate(note.id, { title, content, status: note.status });
+    }
     setIsEditing(false);
   };
 
   return (
-    <div className={styles.noteCard}>
+    <div
+      className={`${styles.noteCard} ${
+        note.status === "completed" ? styles.completed : ""
+      }`}
+    >
       {isEditing ? (
         <>
           <input
@@ -34,18 +38,51 @@ export default function NoteItem({ note, onUpdate, onDelete }) {
             onChange={(e) => setContent(e.target.value)}
           />
           <div className={styles.buttonGroup}>
-            <button className={styles.saveBtn} onClick={handleSave}>Save</button>
-            <button className={styles.cancelBtn} onClick={() => setIsEditing(false)}>Cancel</button>
+            <button className={styles.saveBtn} onClick={handleSave}>
+              <FaCheck size={14} /> Save
+            </button>
+            <button
+              className={styles.cancelBtn}
+              onClick={() => setIsEditing(false)}
+            >
+              <FaTimes size={14} /> Cancel
+            </button>
           </div>
         </>
       ) : (
         <>
-          <h3 className={styles.title}>{title}</h3>
+          <h3
+            className={`${styles.title} ${
+              note.status === "completed" ? styles.strikethrough : ""
+            }`}
+          >
+            {title}
+          </h3>
           <p className={styles.content}>{content}</p>
           <div className={styles.buttonGroup}>
-            <button className={styles.editBtn} onClick={() => setIsEditing(true)}>
-              <FaPencilAlt size={15} /></button>
-            <button className={styles.deleteBtn} onClick={() => onDelete(note.id)}><FaTrash size={16} /> </button>
+            <button
+              className={styles.editBtn}
+              onClick={() => setIsEditing(true)}
+            >
+              <FaPencilAlt size={15} /> Edit
+            </button>
+            <button
+              className={styles.deleteBtn}
+              onClick={() => onDelete(note.id)}
+            >
+              <FaTrash size={16} /> Delete
+            </button>
+            <button
+              className={styles.completeBtn}
+              onClick={() =>
+                onComplete(
+                  note.id,
+                  note.status === "completed" ? "pending" : "completed"
+                )
+              }
+            >
+              {note.status === "completed" ? "Undo" : "Complete"}
+            </button>
           </div>
         </>
       )}
