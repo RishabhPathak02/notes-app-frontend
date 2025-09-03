@@ -8,7 +8,7 @@ import styles from "./Notes.module.css";
 
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://notes-app-backend-1-fou7.onrender.com",
 });
 
 apiClient.interceptors.request.use(
@@ -28,7 +28,7 @@ export default function Notes() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // ✅ Fetch notes
+ 
   const fetchNotes = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -57,7 +57,7 @@ export default function Notes() {
     }
   }, [fetchNotes, navigate]);
 
-  // ✅ Add note
+  
   const handleAdd = async (note) => {
     try {
       const res = await apiClient.post("/notes", note);
@@ -69,7 +69,6 @@ export default function Notes() {
     }
   };
 
-  // ✅ Update note (title/content or status)
   const handleUpdate = async (id, updatedFields) => {
     try {
       const existing = notes.find((n) => n.id === id);
@@ -86,7 +85,7 @@ export default function Notes() {
     }
   };
 
-  // ✅ Delete note
+  
   const handleDelete = async (id) => {
     try {
       await apiClient.delete(`/notes/${id}`);
@@ -98,12 +97,12 @@ export default function Notes() {
     }
   };
 
-  // ✅ Toggle complete
+  
   const handleComplete = async (id, status) => {
     await handleUpdate(id, { status });
   };
 
-  // ✅ Render content
+  
   const renderContent = () => {
     if (isLoading) return <p className={styles.message}>Loading notes...</p>;
     if (error) return <p className={styles.error}>{error}</p>;

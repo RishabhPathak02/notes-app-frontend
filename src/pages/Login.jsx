@@ -19,7 +19,7 @@ export default function Login({ onLoginSuccess }) {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/auth/login",
+        "https://notes-app-backend-1-fou7.onrender.com/auth/login",
         { username, password }
       );
       
